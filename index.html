@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>Kiểm kê vườn cây cao su</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<!-- PWA -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#2e7d32">
+
+<!-- SheetJS -->
+<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+
+<style>
+:root{
+  --green-main:#2e7d32;
+  --green-light:#e8f5e9;
+  --green-btn:#43a047;
+  --orange:#fb8c00;
+  --yellow:#fdd835;
+  --purple:#7e57c2;
+  --red:#e53935;
+  --gray:#6c757d;
+}
+
+body{
+  font-family: "Segoe UI", Arial, sans-serif;
+  margin:0;
+  background:linear-gradient(#e8f5e9,#ffffff);
+}
+
+header{
+  background:var(--green-main);
+  color:white;
+  padding:14px;
+  text-align:center;
+  font-size:22px;
+  font-weight:bold;
+}
+
+.container{ padding:12px; }
+
+.box{
+  background:white;
+  border-radius:14px;
+  padding:14px;
+  margin-bottom:14px;
+  box-shadow:0 4px 10px rgba(0,0,0,0.08);
+}
+
+h3{
+  text-align:center;
+  margin-top:0;
+  color:var(--green-main);
+}
+
+input{
+  width:100%;
+  font-size:18px;
+  padding:10px;
+  border-radius:10px;
+  border:1px solid #ccc;
+  margin-bottom:10px;
+}
+
+button{
+  border:none;
+  border-radius:14px;
+  font-size:22px;
+  height:70px;
+  margin:6px 4px;
+  cursor:pointer;
+}
+
+.btn-full{
+  width:100%;
+  background:var(--green-btn);
+  color:white;
+}
+
+.btn-small{
+  width:100%;
+  height:56px;
+  font-size:18px;
+  background:#eeeeee;
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+}
+
+.btn-G{background:#66bb6a;color:white;}
+.btn-O{background:var(--orange);color:white;}
+.btn-K1{background:var(--yellow);}
+.btn-K2{background:var(--purple);color:white;}
+.btn-D{grid-column:1/3;background:var(--red);color:white;}
+
+#tree{
+  text-align:center;
+  font-size:28px;
+  margin:8px 0;
+}
+
+#info{
+  text-align:center;
+  font-size:16px;
+  color:#555;
+}
+
+#lastType{
+  text-align:center;
+  font-weight:bold;
+  font-size:20px;
+  margin-bottom:6px;
+}
+
+footer{
+  text-align:center;
+  font-size:13px;
+  color:#555;
+  padding:10px 0 14px;
+}
+</style>
+</head>
+
+<body>
+
+<header>🌱 KIỂM KÊ VƯỜN CÂY CAO SU</header>
+
+<div class="container">
+
+<!-- KHỞI TẠO LÔ -->
+<div id="setup" class="box">
+  <h3>Khởi tạo lô</h3>
+  Tên lô <input id="lo">
+  Năm trồng <input id="namTrong" type="number">
+  Diện tích (ha) <input id="dienTich" type="number" step="0.01">
+  Số hàng <input id="soHang" type="number">
+  <button class="btn-full" onclick="startLo()">BẮT ĐẦU KIỂM KÊ</button>
+</div>
+
+<!-- KIỂM KÊ -->
+<div id="counter" class="box" style="display:none;">
+  <div id="info"></div>
+  <div id="tree">Cây số: 1</div>
+  <div id="lastType">Vừa nhập: -</div>
+
+  <div class="grid">
+    <button class="btn-G" onclick="count('G')">G</button>
+    <button class="btn-O" onclick="count('O')">O</button>
+    <button class="btn-K1" onclick="count('K1')">K1</button>
+    <button class="btn-K2" onclick="count('K2')">K2</button>
+    <button class="btn-D" onclick="count('D')">D</button>
+  </div>
+
+  <button class="btn-small" onclick="undoLast()">↩ SỬA CÂY VỪA NHẬP</button>
+  <button class="btn-full" onclick="finishRow()">HOÀN TẤT HÀNG</button>
+</div>
+
+<!-- CUỐI NGÀY -->
+<div class="box">
+  <button class="btn-full" onclick="exportAll()">XUẤT EXCEL CUỐI NGÀY</button>
+  <button class="btn-small" onclick="clearData()">XOÁ TOÀN BỘ DỮ LIỆU</button>
+</div>
+
+</div>
+
+<footer>© Copyright by <b>vancanhql@gmail.com</b></footer>
+
+<script>
+const typeColors={G:"#66bb6a",O:"#fb8c00",K1:"#fdd835",K2:"#7e57c2",D:"#e53935"};
+
+let dsLo=JSON.parse(localStorage.getItem("dsLo")||"[]");
+let loHT=null,hang=1,cay=1;
+
+function startLo(){
+  loHT={lo:lo.value,namTrong:namTrong.value,dienTich:dienTich.value,soHang:+soHang.value,data:[]};
+  hang=1;cay=1;
+  setup.style.display="none";
+  counter.style.display="block";
+  resetLastType();
+  updateInfo();
+}
+
+function updateInfo(){
+  info.innerText=`Lô: ${loHT.lo} | Năm trồng: ${loHT.namTrong} | DT: ${loHT.dienTich} ha | Hàng: ${hang}/${loHT.soHang}`;
+  tree.innerText=`Cây số: ${cay}`;
+}
+
+function resetLastType(){
+  lastType.innerText="Vừa nhập: -";
+  lastType.style.color="#000";
+}
+
+function count(type){
+  loHT.data.push({hang,cay,type});
+  lastType.innerText="Vừa nhập: "+type;
+  lastType.style.color=typeColors[type];
+  cay++; updateInfo();
+}
+
+function undoLast(){
+  if(loHT.data.length===0) return alert("Chưa có cây để sửa");
+  let last=loHT.data.at(-1);
+  if(last.hang!==hang) return alert("Không thể sửa cây hàng trước");
+  loHT.data.pop(); cay=Math.max(1,cay-1);
+  lastType.innerText="Vừa nhập: (đã xoá)";
+  lastType.style.color="#6c757d";
+  updateInfo();
+}
+
+function finishRow(){
+  alert(`Xong hàng ${hang}`);
+  hang++; cay=1;
+  if(hang>loHT.soHang) finishLo();
+  else{ resetLastType(); updateInfo(); }
+}
+
+function finishLo(){
+  dsLo.push(loHT);
+  localStorage.setItem("dsLo",JSON.stringify(dsLo));
+  alert(`Đã lưu xong ${loHT.lo}`);
+  counter.style.display="none";
+  setup.style.display="block";
+}
+
+function exportAll(){
+  let ds=JSON.parse(localStorage.getItem("dsLo")||"[]");
+  if(ds.length===0) return alert("Chưa có lô nào");
+
+  let wb=XLSX.utils.book_new();
+
+  /* TỔNG HỢP LÔ */
+  let thLo=[["STT","Tên lô","Năm trồng","Diện tích","Số hàng","Tổng cây","G","O","K1","K2","D"]];
+  ds.forEach((lo,i)=>{
+    let d={G:0,O:0,K1:0,K2:0,D:0};
+    lo.data.forEach(x=>d[x.type]++);
+    thLo.push([i+1,lo.lo,lo.namTrong,lo.dienTich,lo.soHang,lo.data.length,d.G,d.O,d.K1,d.K2,d.D]);
+  });
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(thLo),"TONG_HOP_LO");
+
+  /* THEO HÀNG */
+  ds.forEach((lo,i)=>{
+    let sh=[["Hàng","Tổng cây","G","O","K1","K2","D"]];
+    for(let h=1;h<=lo.soHang;h++){
+      let d={G:0,O:0,K1:0,K2:0,D:0};
+      lo.data.filter(x=>x.hang===h).forEach(x=>d[x.type]++);
+      sh.push([h,d.G+d.O+d.K1+d.K2+d.D,d.G,d.O,d.K1,d.K2,d.D]);
+    }
+    XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(sh),`LO_${i+1}_TH`);
+  });
+
+  /* CHI TIẾT */
+  ds.forEach((lo,i)=>{
+    let ct=[["STT","Tên lô","Năm trồng","Diện tích","Hàng","Cây","Loại"]];
+    lo.data.forEach((x,j)=>ct.push([j+1,lo.lo,lo.namTrong,lo.dienTich,x.hang,x.cay,x.type]));
+    XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(ct),`LO_${i+1}_CHI_TIET`);
+  });
+
+  XLSX.writeFile(wb,"KiemKe_CuoiNgay.xlsx");
+}
+
+function clearData(){
+  if(confirm("Xoá toàn bộ dữ liệu?")){
+    localStorage.removeItem("dsLo");
+    dsLo=[];
+    alert("Đã xoá xong");
+  }
+}
+</script>
+
+<script>
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('service-worker.js')
+    .then(()=>console.log("PWA ready"))
+    .catch(e=>console.error(e));
+}
+</script>
+
+</body>
+</html>
