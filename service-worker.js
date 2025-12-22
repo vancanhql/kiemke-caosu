@@ -1,4 +1,4 @@
-const CACHE_NAME = "kiemke-caosu-v1";
+const CACHE_NAME = "kiemke-caosu-v1.1";
 const FILES_TO_CACHE = [
   "./",
   "./index.html",
@@ -22,3 +22,17 @@ self.addEventListener("fetch", function (e) {
     })
   );
 });
+self.addEventListener("activate", function (e) {
+  e.waitUntil(
+    caches.keys().then(function (keys) {
+      return Promise.all(
+        keys.map(function (key) {
+          if (key !== CACHE_NAME) {
+            return caches.delete(key);
+          }
+        })
+      );
+    })
+  );
+});
+
