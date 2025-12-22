@@ -212,7 +212,7 @@ function undoLast(){
 }
 
 function finishRow(){
-  alert(`Xong hàng ${hang}`);
+  showToast(`Đã xong hàng ${hang}`);
   hang++; cay=1;
   if(hang>loHT.soHang) finishLo();
   else{ resetLastType(); updateInfo(); }
@@ -221,7 +221,7 @@ function finishRow(){
 function finishLo(){
   dsLo.push(loHT);
   localStorage.setItem("dsLo",JSON.stringify(dsLo));
-  alert(`Đã lưu xong ${loHT.lo}`);
+  showToast(`Đã lưu xong lô ${loHT.lo}`);
   counter.style.display="none";
   setup.style.display="block";
 }
@@ -266,9 +266,18 @@ function clearData(){
   if(confirm("Xoá toàn bộ dữ liệu?")){
     localStorage.removeItem("dsLo");
     dsLo=[];
-    alert("Đã xoá xong");
+   showToast("Đã xoá toàn bộ dữ liệu");
   }
 }
+  function showToast(msg){
+  const t = document.getElementById("toast");
+  t.innerText = msg;
+  t.style.display = "block";
+  setTimeout(() => {
+    t.style.display = "none";
+  }, 2000);
+}
+
 </script>
 
 <script>
@@ -278,6 +287,21 @@ if('serviceWorker' in navigator){
     .catch(e=>console.error(e));
 }
 </script>
+<div id="toast" style="
+  position:fixed;
+  bottom:30px;
+  left:50%;
+  transform:translateX(-50%);
+  background:#2e7d32;
+  color:white;
+  padding:12px 20px;
+  border-radius:20px;
+  font-size:18px;
+  display:none;
+  z-index:9999;
+">
+</div>
 
 </body>
 </html>
+
