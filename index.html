@@ -283,14 +283,124 @@ function finishLo(){
 }
 
 /* ===== XUẤT EXCEL (GIỮ NGUYÊN) ===== */
-function exportAll(){ /* giữ nguyên như anh đang dùng */ }
-
-function clearData(){
-  if(confirm("Xoá toàn bộ dữ liệu?")){
-    localStorage.removeItem("dsLo");
-    dsLo=[];
-    showToast("Đã xoá toàn bộ dữ liệu");
+  function exportAll(){
+  let ds = JSON.parse(localStorage.getItem("dsLo") || "[]");
+  if(ds.length === 0){
+    showToast("Chưa có lô nào để xuất");
+    return;
   }
+
+  let wb = XLSX.utils.book_new();
+
+  /* ===== SHEET 1: TỔNG HỢP LÔ ===== */
+  let tongHopLo = [[
+    "STT",
+    "Tên lô",
+    "Năm trồng",
+    "Diện tích (ha)",
+    "Số hàng",
+    "Tổng cây",
+    "G",
+    "O",
+    "K1",
+    "K2",
+    "D"
+  ]];
+
+  ds.forEach((lo, i) => {
+    let dem = {G:0, O:0, K1:0, K2:0, D:0};
+    lo.data.forEach(d => dem[d.type]++);
+
+    tongHopLo.push([
+      i + 1,
+      lo.lo,
+      lo.namTrong,
+      lo.dienTich,
+      lo.soHang,
+      lo.data.length,
+      dem.G,
+      dem.O,
+      dem.K1,
+      dem.K2,
+      dem.D
+    ]);
+  });
+
+  XLSX.utils.book_append_sheet(
+    wb,
+    XLSX.utils.aoa_to_sheet(tongHopLo),
+    "TONG_HOP_LO"
+  );
+
+  /* ===== SHEET 2..n: TỔNG HỢP THEO HÀNG ===== */
+  ds.forEach((lo, i) => {
+    let theoHang = [[
+      "Hàng",
+      "Tổng cây",
+      "G",
+      "O",
+      "K1",
+      "K2",
+      "D"
+    ]];
+
+    for(let h = 1; h <= lo.soHang; h++){
+      let dem = {G:0, O:0, K1:0, K2:0, D:0};
+
+      lo.data
+        .filter(d => d.hang === h)
+        .forEach(d => dem[d.type]++);
+
+      theoHang.push([
+        h,
+        dem.G + dem.O + dem.K1 + dem.K2 + dem.D,
+        dem.G,
+        dem.O,
+        dem.K1,
+        dem.K2,
+        dem.D
+      ]);
+    }
+
+    XLSX.utils.book_append_sheet(
+      wb,
+      XLSX.utils.aoa_to_sheet(theoHang),
+      `LO_${i+1}_TH`
+    );
+  });
+
+  /* ===== SHEET CUỐI: CHI TIẾT TỪNG CÂY ===== */
+  ds.forEach((lo, i) => {
+    let chiTiet = [[
+      "STT",
+      "Tên lô",
+      "Năm trồng",
+      "Diện tích (ha)",
+      "Hàng",
+      "Cây",
+      "Loại"
+    ]];
+
+    lo.data.forEach((d, j) => {
+      chiTiet.push([
+        j + 1,
+        lo.lo,
+        lo.namTrong,
+        lo.dienTich,
+        d.hang,
+        d.cay,
+        d.type
+      ]);
+    });
+
+    XLSX.utils.book_append_sheet(
+      wb,
+      XLSX.utils.aoa_to_sheet(chiTiet),
+      `LO_${i+1}_CHI_TIET`
+    );
+  });
+
+  XLSX.writeFile(wb, "KiemKe_CuoiNgay.xlsx");
 }
 </script>
 
@@ -304,3 +414,4 @@ if('serviceWorker' in navigator){
 
 </body>
 </html>
+
