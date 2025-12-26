@@ -315,25 +315,36 @@ function finishLo(){
 }
 
 /* ===== DANH SÁCH LÔ ===== */
-function renderDsLo(){
-  let wrap=document.getElementById("dsLoView");
-  let ds=JSON.parse(localStorage.getItem("dsLo")||"[]");
-  wrap.innerHTML=ds.length?"":"<i>Chưa có lô nào</i>";
+function countSoHang(lo){
+  if(!lo.data || lo.data.length === 0) return 0;
+  return new Set(lo.data.map(d => d.hang)).size;
+}
 
-  ds.forEach((lo,i)=>{
-    let dem={G:0,O:0,K1:0,K2:0,D:0};
-    lo.data.forEach(d=>dem[d.type]++);
-    wrap.innerHTML+=`
+/* ===== DANH SÁCH LÔ ===== */
+function renderDsLo(){
+  let wrap = document.getElementById("dsLoView");
+  let ds = JSON.parse(localStorage.getItem("dsLo") || "[]");
+
+  wrap.innerHTML = ds.length ? "" : "<i>Chưa có lô nào</i>";
+
+  ds.forEach((lo, i) => {
+    let dem = {G:0,O:0,K1:0,K2:0,D:0};
+    lo.data.forEach(d => dem[d.type]++);
+
+    wrap.innerHTML += `
     <div class="lo-item">
       <div class="lo-info">
         <b>${lo.lo}</b> – ${lo.namTrong}<br>
-        DT:${lo.dienTich}ha | H:${lo.soHang} | Cây:${lo.data.length}<br>
+        DT:${lo.dienTich}ha |
+        H:${countSoHang(lo)} |
+        Cây:${lo.data.length}<br>
         G:${dem.G} O:${dem.O} K1:${dem.K1} K2:${dem.K2} D:${dem.D}
       </div>
       <button class="btn-del-lo" onclick="deleteLo(${i})">❌</button>
     </div>`;
   });
 }
+
 
 function deleteLo(i){
   let ds=JSON.parse(localStorage.getItem("dsLo")||"[]");
@@ -389,7 +400,7 @@ function exportAll(){
 
     tongHopLo.push([
       i+1, lo.lo, lo.namTrong, lo.dienTich,
-      lo.soHang, lo.data.length,
+      countSoHang(lo), lo.data.length,
       dem.G, dem.O, dem.K1, dem.K2, dem.D
     ]);
   });
@@ -401,26 +412,30 @@ function exportAll(){
   );
 
   /* ===== SHEET THEO HÀNG ===== */
-  ds.forEach((lo, i) => {
-    let theoHang = [["Hàng","Tổng cây","G","O","K1","K2","D"]];
+/* ===== SHEET THEO HÀNG ===== */
+ds.forEach((lo, i) => {
+  let theoHang = [["Hàng","Tổng cây","G","O","K1","K2","D"]];
 
-    for(let h=1; h<=lo.soHang; h++){
-      let dem={G:0,O:0,K1:0,K2:0,D:0};
-      lo.data.filter(d=>d.hang===h).forEach(d=>dem[d.type]++);
+  const hangList = [...new Set(lo.data.map(d => d.hang))].sort((a,b)=>a-b);
 
-      theoHang.push([
-        h,
-        dem.G+dem.O+dem.K1+dem.K2+dem.D,
-        dem.G,dem.O,dem.K1,dem.K2,dem.D
-      ]);
-    }
+  hangList.forEach(h => {
+    let dem = {G:0,O:0,K1:0,K2:0,D:0};
+    lo.data.filter(d => d.hang === h).forEach(d => dem[d.type]++);
 
-    XLSX.utils.book_append_sheet(
-      wb,
-      XLSX.utils.aoa_to_sheet(theoHang),
-      `LO_${i+1}_HANG`
-    );
+    theoHang.push([
+      h,
+      dem.G + dem.O + dem.K1 + dem.K2 + dem.D,
+      dem.G, dem.O, dem.K1, dem.K2, dem.D
+    ]);
   });
+
+  XLSX.utils.book_append_sheet(
+    wb,
+    XLSX.utils.aoa_to_sheet(theoHang),
+    `LO_${i+1}_HANG`
+  );
+});
+
 
   /* ===== SHEET CHI TIẾT ===== */
   ds.forEach((lo, i) => {
@@ -467,6 +482,10 @@ function endLo(){
   counter.style.display = "none";
   setup.style.display = "block";
 }
+function countSoHang(lo){
+  if(!lo.data || lo.data.length === 0) return 0;
+  return new Set(lo.data.map(d => d.hang)).size;
+}
 
   
 </script>
@@ -506,6 +525,7 @@ function showUpdateToast(){
 
 </body>
 </html>
+
 
 
 
