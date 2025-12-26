@@ -25,7 +25,7 @@
 }
 
 body{
-  font-family: "Segoe UI", Arial, sans-serif;
+  font-family:"Segoe UI",Arial,sans-serif;
   margin:0;
   background:linear-gradient(#e8f5e9,#ffffff);
 }
@@ -64,7 +64,6 @@ input{
   margin-bottom:10px;
 }
 
-/* NÚT CHUNG */
 button{
   border:none;
   border-radius:14px;
@@ -74,7 +73,6 @@ button{
   cursor:pointer;
 }
 
-/* NÚT CÂY – SIÊU TO */
 .btn-tree{
   height:100px;
   font-size:34px;
@@ -82,7 +80,6 @@ button{
   border-radius:22px;
 }
 
-/* NÚT CHỨC NĂNG PHỤ */
 .btn-full{
   width:100%;
   background:var(--green-btn);
@@ -134,7 +131,9 @@ footer{
   color:#555;
   padding:10px 0 14px;
 }
-  .lo-item{
+
+/* DANH SÁCH LÔ */
+.lo-item{
   display:flex;
   justify-content:space-between;
   align-items:center;
@@ -144,9 +143,7 @@ footer{
   background:#f5f5f5;
 }
 
-.lo-info{
-  font-size:14px;
-}
+.lo-info{ font-size:14px; }
 
 .btn-del-lo{
   background:#e53935;
@@ -158,7 +155,6 @@ footer{
   font-size:20px;
   cursor:pointer;
 }
-
 </style>
 </head>
 
@@ -168,7 +164,7 @@ footer{
 
 <div class="container">
 
-<!-- KHỞI TẠO LÔ -->
+<!-- KHỞI TẠO -->
 <div id="setup" class="box">
   <h3>Khởi tạo lô</h3>
   Tên lô <input id="lo">
@@ -196,53 +192,44 @@ footer{
   <button class="btn-full" onclick="finishRow()">HOÀN TẤT HÀNG</button>
 </div>
 
-<!-- CUỐI NGÀY -->
-  <div class="box">
+<!-- CHỨC NĂNG -->
+<div class="box">
   <button class="btn-full" onclick="exportAll()">XUẤT EXCEL KIỂM KÊ</button>
   <button class="btn-small" onclick="showDsLo()">📂 DANH SÁCH LÔ ĐÃ LƯU</button>
   <button class="btn-small" onclick="clearData()">XOÁ TOÀN BỘ DỮ LIỆU</button>
 </div>
+
 <!-- TRANG DANH SÁCH LÔ -->
 <div id="pageDsLo" class="box" style="display:none;">
   <h3>Danh sách lô đã lưu</h3>
   <div id="dsLoView"></div>
-
-  <button class="btn-small" onclick="showMain()">⬅ Quay lại kiểm kê</button>
+  <button class="btn-small" onclick="showMain()">⬅ Quay lại</button>
 </div>
 
-  
 </div>
 
-<footer>© Copyright by <b>vancanhql@gmail.com</b></footer>
+<footer>© Copyright <b>vancanhql@gmail.com</b></footer>
 
 <!-- TOAST -->
 <div id="toast" style="
-  position:fixed;
-  bottom:30px;
-  left:50%;
-  transform:translateX(-50%);
-  background:#2e7d32;
-  color:white;
-  padding:12px 20px;
-  border-radius:20px;
-  font-size:18px;
-  display:none;
-  z-index:9999;
-"></div>
+position:fixed;
+bottom:30px;
+left:50%;
+transform:translateX(-50%);
+background:#2e7d32;
+color:white;
+padding:12px 20px;
+border-radius:20px;
+font-size:18px;
+display:none;
+z-index:9999;"></div>
 
 <script>
-/* ===== RUNG ===== */
-function vibrate(pattern){
-  if(navigator.vibrate){
-    navigator.vibrate(pattern);
-  }
-}
-
-/* ===== TOAST ===== */
-function showToast(msg){
-  const t=document.getElementById("toast");
-  t.innerText=msg;
-  t.style.display="block";
+/* ===== TIỆN ÍCH ===== */
+function vibrate(p){ if(navigator.vibrate) navigator.vibrate(p); }
+function showToast(m){
+  let t=document.getElementById("toast");
+  t.innerText=m; t.style.display="block";
   setTimeout(()=>t.style.display="none",2000);
 }
 
@@ -251,13 +238,13 @@ const typeColors={G:"#66bb6a",O:"#fb8c00",K1:"#fdd835",K2:"#7e57c2",D:"#e53935"}
 let dsLo=JSON.parse(localStorage.getItem("dsLo")||"[]");
 let loHT=null,hang=1,cay=1;
 
+/* ===== KIỂM KÊ ===== */
 function startLo(){
   loHT={lo:lo.value,namTrong:namTrong.value,dienTich:dienTich.value,soHang:+soHang.value,data:[]};
   hang=1;cay=1;
   setup.style.display="none";
   counter.style.display="block";
-  resetLastType();
-  updateInfo();
+  resetLastType(); updateInfo();
 }
 
 function updateInfo(){
@@ -265,15 +252,10 @@ function updateInfo(){
   tree.innerText=`Cây số: ${cay}`;
 }
 
-function resetLastType(){
-  lastType.innerText="Vừa nhập: -";
-  lastType.style.color="#000";
-}
+function resetLastType(){ lastType.innerText="Vừa nhập: -"; lastType.style.color="#000"; }
 
 function count(type){
-  if(type==="D") vibrate([200,100,200]);
-  else vibrate(50);
-
+  vibrate(type==="D"?[200,100,200]:50);
   loHT.data.push({hang,cay,type});
   lastType.innerText="Vừa nhập: "+type;
   lastType.style.color=typeColors[type];
@@ -281,17 +263,15 @@ function count(type){
 }
 
 function undoLast(){
-  vibrate([40,40]);
-  if(loHT.data.length===0) return;
-  let last=loHT.data.at(-1);
-  if(last.hang!==hang) return;
+  if(!loHT.data.length) return;
+  let l=loHT.data.at(-1);
+  if(l.hang!==hang) return;
   loHT.data.pop(); cay=Math.max(1,cay-1);
   lastType.innerText="Vừa nhập: (đã xoá)";
   lastType.style.color="#6c757d";
   updateInfo();
 }
 
-/* ===== THỐNG KÊ HÀNG ===== */
 function thongKeHang(h){
   let d={G:0,O:0,K1:0,K2:0,D:0};
   loHT.data.filter(x=>x.hang===h).forEach(x=>d[x.type]++);
@@ -301,254 +281,79 @@ function thongKeHang(h){
 function finishRow(){
   let d=thongKeHang(hang);
   vibrate(300);
-  showToast(`Hàng ${hang}: G=${d.G} | O=${d.O} | K1=${d.K1} | K2=${d.K2} | D=${d.D}`);
-
+  showToast(`Hàng ${hang}: G=${d.G} O=${d.O} K1=${d.K1} K2=${d.K2} D=${d.D}`);
   hang++; cay=1;
-  if(hang>loHT.soHang) finishLo();
-  else{ resetLastType(); updateInfo(); }
+  hang>loHT.soHang?finishLo():(resetLastType(),updateInfo());
 }
 
 function finishLo(){
- dsLo.push(loHT);
-localStorage.setItem("dsLo",JSON.stringify(dsLo));
-showToast(`Đã lưu xong lô ${loHT.lo}`);
-counter.style.display="none";
-setup.style.display="block";
-renderDsLo();
+  dsLo.push(loHT);
+  localStorage.setItem("dsLo",JSON.stringify(dsLo));
+  showToast(`Đã lưu xong lô ${loHT.lo}`);
+  counter.style.display="none";
+  setup.style.display="block";
 }
 
-/* ===== XUẤT EXCEL (GIỮ NGUYÊN) ===== */
-  function exportAll(){
-  let ds = JSON.parse(localStorage.getItem("dsLo") || "[]");
-  if(ds.length === 0){
-    showToast("Chưa có lô nào để xuất");
-    return;
-  }
-
-  let wb = XLSX.utils.book_new();
-
-  /* ===== SHEET 1: TỔNG HỢP LÔ ===== */
-  let tongHopLo = [[
-    "STT",
-    "Tên lô",
-    "Năm trồng",
-    "Diện tích (ha)",
-    "Số hàng",
-    "Tổng cây",
-    "G",
-    "O",
-    "K1",
-    "K2",
-    "D"
-  ]];
-
-  ds.forEach((lo, i) => {
-    let dem = {G:0, O:0, K1:0, K2:0, D:0};
-    lo.data.forEach(d => dem[d.type]++);
-
-    tongHopLo.push([
-      i + 1,
-      lo.lo,
-      lo.namTrong,
-      lo.dienTich,
-      lo.soHang,
-      lo.data.length,
-      dem.G,
-      dem.O,
-      dem.K1,
-      dem.K2,
-      dem.D
-    ]);
-  });
-
-  XLSX.utils.book_append_sheet(
-    wb,
-    XLSX.utils.aoa_to_sheet(tongHopLo),
-    "TONG_HOP_LO"
-  );
-
-  /* ===== SHEET 2..n: TỔNG HỢP THEO HÀNG ===== */
-  ds.forEach((lo, i) => {
-    let theoHang = [[
-      "Hàng",
-      "Tổng cây",
-      "G",
-      "O",
-      "K1",
-      "K2",
-      "D"
-    ]];
-
-    for(let h = 1; h <= lo.soHang; h++){
-      let dem = {G:0, O:0, K1:0, K2:0, D:0};
-
-      lo.data
-        .filter(d => d.hang === h)
-        .forEach(d => dem[d.type]++);
-
-      theoHang.push([
-        h,
-        dem.G + dem.O + dem.K1 + dem.K2 + dem.D,
-        dem.G,
-        dem.O,
-        dem.K1,
-        dem.K2,
-        dem.D
-      ]);
-    }
-
-    XLSX.utils.book_append_sheet(
-      wb,
-      XLSX.utils.aoa_to_sheet(theoHang),
-      `LO_${i+1}_TH`
-    );
-  });
-
-  /* ===== SHEET CUỐI: CHI TIẾT TỪNG CÂY ===== */
-  ds.forEach((lo, i) => {
-    let chiTiet = [[
-      "STT",
-      "Tên lô",
-      "Năm trồng",
-      "Diện tích (ha)",
-      "Hàng",
-      "Cây",
-      "Loại"
-    ]];
-
-    lo.data.forEach((d, j) => {
-      chiTiet.push([
-        j + 1,
-        lo.lo,
-        lo.namTrong,
-        lo.dienTich,
-        d.hang,
-        d.cay,
-        d.type
-      ]);
-    });
-
-    XLSX.utils.book_append_sheet(
-      wb,
-      XLSX.utils.aoa_to_sheet(chiTiet),
-      `LO_${i+1}_CHI_TIET`
-    );
-  });
-
-  XLSX.writeFile(wb, "KiemKe_CuoiNgay.xlsx");
-}
-  
-  function clearData(){
-  vibrate([200,100,200]);
-
-  if(!confirm("⚠️ XÁC NHẬN XOÁ TOÀN BỘ DỮ LIỆU KIỂM KÊ?\nDữ liệu đã xoá sẽ KHÔNG THỂ KHÔI PHỤC!")){
-    return;
-  }
-
-  // Xoá localStorage
-  localStorage.removeItem("dsLo");
-
-  // Reset biến trong bộ nhớ
-  dsLo = [];
-  loHT = null;
-  hang = 1;
-  cay = 1;
-
-  // Reset giao diện
-  counter.style.display = "none";
-  setup.style.display = "block";
-
-  resetLastType();
-
-  showToast("✅ Đã xoá toàn bộ dữ liệu kiểm kê");
-}
-
- /* ===== HIỂN THỊ DANH SÁCH LÔ ===== */
+/* ===== DANH SÁCH LÔ ===== */
 function renderDsLo(){
-  let wrap = document.getElementById("dsLoView");
-  if(!wrap) return;
+  let wrap=document.getElementById("dsLoView");
+  let ds=JSON.parse(localStorage.getItem("dsLo")||"[]");
+  wrap.innerHTML=ds.length?"":"<i>Chưa có lô nào</i>";
 
-  let ds = JSON.parse(localStorage.getItem("dsLo") || "[]");
-
-  if(ds.length === 0){
-    wrap.innerHTML = "<i>Chưa có lô nào được lưu</i>";
-    return;
-  }
-
-  wrap.innerHTML = "";
-
-  ds.forEach((lo, index) => {
-    let dem = {G:0,O:0,K1:0,K2:0,D:0};
-    lo.data.forEach(d => dem[d.type]++);
-
-    let div = document.createElement("div");
-    div.className = "lo-item";
-
-    div.innerHTML = `
+  ds.forEach((lo,i)=>{
+    let dem={G:0,O:0,K1:0,K2:0,D:0};
+    lo.data.forEach(d=>dem[d.type]++);
+    wrap.innerHTML+=`
+    <div class="lo-item">
       <div class="lo-info">
         <b>${lo.lo}</b> – ${lo.namTrong}<br>
-        DT: ${lo.dienTich} ha | Hàng: ${lo.soHang}<br>
-        Tổng cây: ${lo.data.length}
-        (G:${dem.G} O:${dem.O} K1:${dem.K1} K2:${dem.K2} D:${dem.D})
+        DT:${lo.dienTich}ha | H:${lo.soHang} | Cây:${lo.data.length}<br>
+        G:${dem.G} O:${dem.O} K1:${dem.K1} K2:${dem.K2} D:${dem.D}
       </div>
-      <button class="btn-del-lo" onclick="deleteLo(${index})">❌</button>
-    `;
-
-    wrap.appendChild(div);
+      <button class="btn-del-lo" onclick="deleteLo(${i})">❌</button>
+    </div>`;
   });
 }
 
-/* ===== XOÁ 1 LÔ ===== */
-function deleteLo(index){
-  vibrate([200,100,200]);
-
-  let ds = JSON.parse(localStorage.getItem("dsLo") || "[]");
-  let lo = ds[index];
-
-  if(!confirm(`⚠️ Xoá lô "${lo.lo}"?\nToàn bộ dữ liệu kiểm kê của lô này sẽ bị xoá!`)){
-    return;
-  }
-
-  ds.splice(index,1);
-  localStorage.setItem("dsLo", JSON.stringify(ds));
-
-  showToast(`🗑️ Đã xoá lô ${lo.lo}`);
+function deleteLo(i){
+  let ds=JSON.parse(localStorage.getItem("dsLo")||"[]");
+  if(!confirm(`Xoá lô "${ds[i].lo}"?`)) return;
+  ds.splice(i,1);
+  localStorage.setItem("dsLo",JSON.stringify(ds));
+  showToast("Đã xoá lô");
   renderDsLo();
 }
- renderDsLo();
 
-  function showDsLo(){
-  document.getElementById("setup").style.display="none";
-  document.getElementById("counter").style.display="none";
-  document.getElementById("pageDsLo").style.display="block";
+/* ===== ĐIỀU HƯỚNG ===== */
+function showDsLo(){
+  setup.style.display="none";
+  counter.style.display="none";
+  pageDsLo.style.display="block";
   renderDsLo();
 }
 
 function showMain(){
-  document.getElementById("pageDsLo").style.display="none";
-
-  // Nếu đang kiểm kê thì quay lại counter
-  if(loHT){
-    document.getElementById("counter").style.display="block";
-  }else{
-    document.getElementById("setup").style.display="block";
-  }
+  pageDsLo.style.display="none";
+  loHT?counter.style.display="block":setup.style.display="block";
 }
 
+/* ===== XOÁ ALL ===== */
+function clearData(){
+  if(!confirm("Xoá toàn bộ dữ liệu?")) return;
+  localStorage.removeItem("dsLo");
+  dsLo=[]; loHT=null; hang=1; cay=1;
+  pageDsLo.style.display="none";
+  counter.style.display="none";
+  setup.style.display="block";
+  showToast("Đã xoá toàn bộ dữ liệu");
+}
 </script>
 
 <script>
 if('serviceWorker' in navigator){
-  navigator.serviceWorker.register('service-worker.js')
-    .then(()=>console.log("PWA ready"))
-    .catch(e=>console.error(e));
+  navigator.serviceWorker.register('service-worker.js');
 }
 </script>
 
 </body>
 </html>
-
-
-
-
-
