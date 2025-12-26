@@ -190,6 +190,8 @@ footer{
 
   <button class="btn-small" onclick="undoLast()">↩ SỬA CÂY VỪA NHẬP</button>
   <button class="btn-full" onclick="finishRow()">HOÀN TẤT HÀNG</button>
+  <button class="btn-small" onclick="endLo()">⏹ KẾT THÚC LÔ</button>
+
 </div>
 
 <!-- CHỨC NĂNG -->
@@ -440,6 +442,31 @@ function exportAll(){
 
   XLSX.writeFile(wb,"KiemKe_CuoiNgay.xlsx");
 }
+function endLo(){
+  vibrate([200,100,200]);
+
+  if(!confirm(`Kết thúc lô "${loHT?.lo}" và lưu dữ liệu?`)){
+    return;
+  }
+
+  // Chỉ lưu khi có dữ liệu kiểm kê
+  if(loHT && loHT.data.length > 0){
+    dsLo.push(loHT);
+    localStorage.setItem("dsLo", JSON.stringify(dsLo));
+    showToast(`✅ Đã kết thúc lô ${loHT.lo}`);
+  }else{
+    showToast("ℹ️ Lô chưa có dữ liệu");
+  }
+
+  // Reset trạng thái
+  loHT = null;
+  hang = 1;
+  cay = 1;
+
+  // Quay về màn hình khởi tạo
+  counter.style.display = "none";
+  setup.style.display = "block";
+}
 
   
 </script>
@@ -452,5 +479,6 @@ if('serviceWorker' in navigator){
 
 </body>
 </html>
+
 
 
