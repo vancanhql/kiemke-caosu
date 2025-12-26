@@ -403,7 +403,30 @@ function finishLo(){
   XLSX.writeFile(wb, "KiemKe_CuoiNgay.xlsx");
 }
 </script>
+function clearData(){
+  vibrate([200,100,200]);
 
+  if(!confirm("⚠️ XÁC NHẬN XOÁ TOÀN BỘ DỮ LIỆU KIỂM KÊ?\nDữ liệu đã xoá sẽ KHÔNG THỂ KHÔI PHỤC!")){
+    return;
+  }
+
+  // Xoá localStorage
+  localStorage.removeItem("dsLo");
+
+  // Reset biến trong bộ nhớ
+  dsLo = [];
+  loHT = null;
+  hang = 1;
+  cay = 1;
+
+  // Reset giao diện
+  counter.style.display = "none";
+  setup.style.display = "block";
+
+  resetLastType();
+
+  showToast("✅ Đã xoá toàn bộ dữ liệu kiểm kê");
+}
 <script>
 if('serviceWorker' in navigator){
   navigator.serviceWorker.register('service-worker.js')
@@ -414,4 +437,5 @@ if('serviceWorker' in navigator){
 
 </body>
 </html>
+
 
