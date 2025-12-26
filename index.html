@@ -199,13 +199,17 @@ footer{
 <!-- CUỐI NGÀY -->
   <div class="box">
   <button class="btn-full" onclick="exportAll()">XUẤT EXCEL KIỂM KÊ</button>
+  <button class="btn-small" onclick="showDsLo()">📂 DANH SÁCH LÔ ĐÃ LƯU</button>
   <button class="btn-small" onclick="clearData()">XOÁ TOÀN BỘ DỮ LIỆU</button>
 </div>
-<!-- DANH SÁCH LÔ ĐÃ LƯU -->
-<div class="box">
+<!-- TRANG DANH SÁCH LÔ -->
+<div id="pageDsLo" class="box" style="display:none;">
   <h3>Danh sách lô đã lưu</h3>
-  <div id="dsLoView" style="font-size:15px;"></div>
+  <div id="dsLoView"></div>
+
+  <button class="btn-small" onclick="showMain()">⬅ Quay lại kiểm kê</button>
 </div>
+
   
 </div>
 
@@ -512,7 +516,25 @@ function deleteLo(index){
   renderDsLo();
 }
  renderDsLo();
-  
+
+  function showDsLo(){
+  document.getElementById("setup").style.display="none";
+  document.getElementById("counter").style.display="none";
+  document.getElementById("pageDsLo").style.display="block";
+  renderDsLo();
+}
+
+function showMain(){
+  document.getElementById("pageDsLo").style.display="none";
+
+  // Nếu đang kiểm kê thì quay lại counter
+  if(loHT){
+    document.getElementById("counter").style.display="block";
+  }else{
+    document.getElementById("setup").style.display="block";
+  }
+}
+
 </script>
 
 <script>
@@ -525,6 +547,7 @@ if('serviceWorker' in navigator){
 
 </body>
 </html>
+
 
 
 
