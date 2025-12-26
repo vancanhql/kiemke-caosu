@@ -402,8 +402,8 @@ function finishLo(){
 
   XLSX.writeFile(wb, "KiemKe_CuoiNgay.xlsx");
 }
-</script>
-function clearData(){
+  
+  function clearData(){
   vibrate([200,100,200]);
 
   if(!confirm("⚠️ XÁC NHẬN XOÁ TOÀN BỘ DỮ LIỆU KIỂM KÊ?\nDữ liệu đã xoá sẽ KHÔNG THỂ KHÔI PHỤC!")){
@@ -427,6 +427,8 @@ function clearData(){
 
   showToast("✅ Đã xoá toàn bộ dữ liệu kiểm kê");
 }
+</script>
+
 <script>
 if('serviceWorker' in navigator){
   navigator.serviceWorker.register('service-worker.js')
@@ -437,5 +439,6 @@ if('serviceWorker' in navigator){
 
 </body>
 </html>
+
 
 
