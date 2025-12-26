@@ -347,6 +347,83 @@ function clearData(){
   setup.style.display="block";
   showToast("Đã xoá toàn bộ dữ liệu");
 }
+/* ===== XUẤT EXCEL ===== */
+function exportAll(){
+  let ds = JSON.parse(localStorage.getItem("dsLo") || "[]");
+  if(ds.length === 0){
+    showToast("Chưa có lô nào để xuất");
+    return;
+  }
+
+  let wb = XLSX.utils.book_new();
+
+  /* ===== SHEET 1: TỔNG HỢP LÔ ===== */
+  let tongHopLo = [[
+    "STT","Tên lô","Năm trồng","Diện tích (ha)","Số hàng",
+    "Tổng cây","G","O","K1","K2","D"
+  ]];
+
+  ds.forEach((lo, i) => {
+    let dem = {G:0,O:0,K1:0,K2:0,D:0};
+    lo.data.forEach(d => dem[d.type]++);
+
+    tongHopLo.push([
+      i+1, lo.lo, lo.namTrong, lo.dienTich,
+      lo.soHang, lo.data.length,
+      dem.G, dem.O, dem.K1, dem.K2, dem.D
+    ]);
+  });
+
+  XLSX.utils.book_append_sheet(
+    wb,
+    XLSX.utils.aoa_to_sheet(tongHopLo),
+    "TONG_HOP_LO"
+  );
+
+  /* ===== SHEET THEO HÀNG ===== */
+  ds.forEach((lo, i) => {
+    let theoHang = [["Hàng","Tổng cây","G","O","K1","K2","D"]];
+
+    for(let h=1; h<=lo.soHang; h++){
+      let dem={G:0,O:0,K1:0,K2:0,D:0};
+      lo.data.filter(d=>d.hang===h).forEach(d=>dem[d.type]++);
+
+      theoHang.push([
+        h,
+        dem.G+dem.O+dem.K1+dem.K2+dem.D,
+        dem.G,dem.O,dem.K1,dem.K2,dem.D
+      ]);
+    }
+
+    XLSX.utils.book_append_sheet(
+      wb,
+      XLSX.utils.aoa_to_sheet(theoHang),
+      `LO_${i+1}_HANG`
+    );
+  });
+
+  /* ===== SHEET CHI TIẾT ===== */
+  ds.forEach((lo, i) => {
+    let ct=[["STT","Tên lô","Năm trồng","Diện tích","Hàng","Cây","Loại"]];
+
+    lo.data.forEach((d,j)=>{
+      ct.push([
+        j+1, lo.lo, lo.namTrong, lo.dienTich,
+        d.hang, d.cay, d.type
+      ]);
+    });
+
+    XLSX.utils.book_append_sheet(
+      wb,
+      XLSX.utils.aoa_to_sheet(ct),
+      `LO_${i+1}_CHI_TIET`
+    );
+  });
+
+  XLSX.writeFile(wb,"KiemKe_CuoiNgay.xlsx");
+}
+
+  
 </script>
 
 <script>
@@ -357,3 +434,4 @@ if('serviceWorker' in navigator){
 
 </body>
 </html>
+
