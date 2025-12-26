@@ -1,4 +1,4 @@
-const CACHE_NAME = "kiemke-caosu-v2.2";
+const CACHE_NAME = "kiemke-caosu-v2.3"; // 👉 MỖI LẦN UPDATE, ĐỔI SỐ NÀY
 const FILES_TO_CACHE = [
   "./",
   "./index.html",
@@ -8,6 +8,7 @@ const FILES_TO_CACHE = [
 ];
 
 self.addEventListener("install", function (e) {
+  self.skipWaiting(); // ⭐ cho phép SW mới sẵn sàng ngay
   e.waitUntil(
     caches.open(CACHE_NAME).then(function (cache) {
       return cache.addAll(FILES_TO_CACHE);
@@ -15,13 +16,6 @@ self.addEventListener("install", function (e) {
   );
 });
 
-self.addEventListener("fetch", function (e) {
-  e.respondWith(
-    caches.match(e.request).then(function (response) {
-      return response || fetch(e.request);
-    })
-  );
-});
 self.addEventListener("activate", function (e) {
   e.waitUntil(
     caches.keys().then(function (keys) {
@@ -34,16 +28,13 @@ self.addEventListener("activate", function (e) {
       );
     })
   );
+  self.clients.claim(); // ⭐ kiểm soát trang ngay
 });
 
-
-
-
-
-
-
-
-
-
-
-
+self.addEventListener("fetch", function (e) {
+  e.respondWith(
+    caches.match(e.request).then(function (response) {
+      return response || fetch(e.request);
+    })
+  );
+});
