@@ -170,7 +170,7 @@ footer{
   Tên lô <input id="lo">
   Năm trồng <input id="namTrong" type="number">
   Diện tích (ha) <input id="dienTich" type="number" step="0.01">
-  Số hàng <input id="soHang" type="number">
+  Hàng bắt đầu <input id="hangBatDau" type="number" value="1">
   <button class="btn-full" onclick="startLo()">BẮT ĐẦU KIỂM KÊ</button>
 </div>
 
@@ -240,15 +240,28 @@ let loHT=null,hang=1,cay=1;
 
 /* ===== KIỂM KÊ ===== */
 function startLo(){
-  loHT={lo:lo.value,namTrong:namTrong.value,dienTich:dienTich.value,soHang:+soHang.value,data:[]};
-  hang=1;cay=1;
+  loHT={
+    lo:lo.value,
+    namTrong:namTrong.value,
+    dienTich:dienTich.value,
+    hangBatDau:+hangBatDau.value,
+    data:[]
+  };
+
+  hang = loHT.hangBatDau;  // ⭐ mốc hàng do người dùng nhập
+  cay = 1;
+
   setup.style.display="none";
   counter.style.display="block";
-  resetLastType(); updateInfo();
+
+  resetLastType();
+  updateInfo();
 }
 
+
 function updateInfo(){
-  info.innerText=`Lô: ${loHT.lo} | Năm trồng: ${loHT.namTrong} | DT: ${loHT.dienTich} ha | Hàng: ${hang}/${loHT.soHang}`;
+  info.innerText=
+    `Lô: ${loHT.lo} | Năm trồng: ${loHT.namTrong} | DT: ${loHT.dienTich} ha | Hàng đang kiểm: ${hang}`;
   tree.innerText=`Cây số: ${cay}`;
 }
 
@@ -281,10 +294,15 @@ function thongKeHang(h){
 function finishRow(){
   let d=thongKeHang(hang);
   vibrate(300);
-  showToast(`Hàng ${hang}: G=${d.G} O=${d.O} K1=${d.K1} K2=${d.K2} D=${d.D}`);
-  hang++; cay=1;
-  hang>loHT.soHang?finishLo():(resetLastType(),updateInfo());
+  showToast(`Hàng ${hang}: G=${d.G} | O=${d.O} | K1=${d.K1} | K2=${d.K2} | D=${d.D}`);
+
+  hang++;   // ⭐ tự cộng dồn
+  cay=1;
+
+  resetLastType();
+  updateInfo();
 }
+
 
 function finishLo(){
   dsLo.push(loHT);
@@ -434,4 +452,5 @@ if('serviceWorker' in navigator){
 
 </body>
 </html>
+
 
