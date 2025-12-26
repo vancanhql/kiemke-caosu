@@ -134,6 +134,31 @@ footer{
   color:#555;
   padding:10px 0 14px;
 }
+  .lo-item{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:10px;
+  margin-bottom:8px;
+  border-radius:10px;
+  background:#f5f5f5;
+}
+
+.lo-info{
+  font-size:14px;
+}
+
+.btn-del-lo{
+  background:#e53935;
+  color:white;
+  border:none;
+  border-radius:50%;
+  width:38px;
+  height:38px;
+  font-size:20px;
+  cursor:pointer;
+}
+
 </style>
 </head>
 
@@ -172,11 +197,16 @@ footer{
 </div>
 
 <!-- CUỐI NGÀY -->
-<div class="box">
+  <div class="box">
   <button class="btn-full" onclick="exportAll()">XUẤT EXCEL KIỂM KÊ</button>
   <button class="btn-small" onclick="clearData()">XOÁ TOÀN BỘ DỮ LIỆU</button>
 </div>
-
+<!-- DANH SÁCH LÔ ĐÃ LƯU -->
+<div class="box">
+  <h3>Danh sách lô đã lưu</h3>
+  <div id="dsLoView" style="font-size:15px;"></div>
+</div>
+  
 </div>
 
 <footer>© Copyright by <b>vancanhql@gmail.com</b></footer>
@@ -275,11 +305,12 @@ function finishRow(){
 }
 
 function finishLo(){
-  dsLo.push(loHT);
-  localStorage.setItem("dsLo",JSON.stringify(dsLo));
-  showToast(`Đã lưu xong lô ${loHT.lo}`);
-  counter.style.display="none";
-  setup.style.display="block";
+ dsLo.push(loHT);
+localStorage.setItem("dsLo",JSON.stringify(dsLo));
+showToast(`Đã lưu xong lô ${loHT.lo}`);
+counter.style.display="none";
+setup.style.display="block";
+renderDsLo();
 }
 
 /* ===== XUẤT EXCEL (GIỮ NGUYÊN) ===== */
@@ -427,6 +458,61 @@ function finishLo(){
 
   showToast("✅ Đã xoá toàn bộ dữ liệu kiểm kê");
 }
+
+ /* ===== HIỂN THỊ DANH SÁCH LÔ ===== */
+function renderDsLo(){
+  let wrap = document.getElementById("dsLoView");
+  if(!wrap) return;
+
+  let ds = JSON.parse(localStorage.getItem("dsLo") || "[]");
+
+  if(ds.length === 0){
+    wrap.innerHTML = "<i>Chưa có lô nào được lưu</i>";
+    return;
+  }
+
+  wrap.innerHTML = "";
+
+  ds.forEach((lo, index) => {
+    let dem = {G:0,O:0,K1:0,K2:0,D:0};
+    lo.data.forEach(d => dem[d.type]++);
+
+    let div = document.createElement("div");
+    div.className = "lo-item";
+
+    div.innerHTML = `
+      <div class="lo-info">
+        <b>${lo.lo}</b> – ${lo.namTrong}<br>
+        DT: ${lo.dienTich} ha | Hàng: ${lo.soHang}<br>
+        Tổng cây: ${lo.data.length}
+        (G:${dem.G} O:${dem.O} K1:${dem.K1} K2:${dem.K2} D:${dem.D})
+      </div>
+      <button class="btn-del-lo" onclick="deleteLo(${index})">❌</button>
+    `;
+
+    wrap.appendChild(div);
+  });
+}
+
+/* ===== XOÁ 1 LÔ ===== */
+function deleteLo(index){
+  vibrate([200,100,200]);
+
+  let ds = JSON.parse(localStorage.getItem("dsLo") || "[]");
+  let lo = ds[index];
+
+  if(!confirm(`⚠️ Xoá lô "${lo.lo}"?\nToàn bộ dữ liệu kiểm kê của lô này sẽ bị xoá!`)){
+    return;
+  }
+
+  ds.splice(index,1);
+  localStorage.setItem("dsLo", JSON.stringify(ds));
+
+  showToast(`🗑️ Đã xoá lô ${lo.lo}`);
+  renderDsLo();
+}
+ renderDsLo();
+  
 </script>
 
 <script>
@@ -439,6 +525,7 @@ if('serviceWorker' in navigator){
 
 </body>
 </html>
+
 
 
 
