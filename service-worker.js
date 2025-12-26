@@ -1,4 +1,4 @@
-const CACHE_NAME = "kiemke-caosu-v2.3"; // 👉 MỖI LẦN UPDATE, ĐỔI SỐ NÀY
+const CACHE_NAME = "kiemke-caosu-v2.4"; // 👉 MỖI LẦN UPDATE, ĐỔI SỐ NÀY
 const FILES_TO_CACHE = [
   "./",
   "./index.html",
@@ -38,3 +38,4 @@ self.addEventListener("fetch", function (e) {
     })
   );
 });
+
